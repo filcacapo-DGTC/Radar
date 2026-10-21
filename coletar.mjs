@@ -77,7 +77,7 @@ async function pt2030() {
     return p;
   };
   const todos = new Map();
-  for (let pg = 1; pg <= 20; pg++) {
+  for (let pg = 1; pg <= 300; pg++) {
     const r = await get(U, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest', Referer: 'https://portugal2030.pt/avisos/' }, body: corpo(pg) });
     const j = await r.json();
     const arr = Array.isArray(j) ? j : (j.avisos || j.items || j.data || []);
