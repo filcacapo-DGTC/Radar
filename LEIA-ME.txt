@@ -1,0 +1,33 @@
+RADAR DE AVISOS – PUBLICAÇÃO GRATUITA NO GITHUB (DGTC / DFEIF)
+================================================================
+Resultado: um endereço (https://NOME.github.io/radar/) que qualquer pessoa da equipa abre, sem conta e sem custos.
+Todas as manhãs o GitHub recolhe os avisos das fontes e atualiza o ficheiro avisos.json; a app lê-o ao abrir.
+
+PASSO A PASSO (uma só vez, ~10 minutos)
+1. Crie uma conta gratuita em github.com (por exemplo "dfeif-loures").
+2. Em "New repository": nome "radar", marque "Public", crie.
+3. Descompacte este pacote. No repositório, carregue em "Add file > Upload files" e arraste TODO o conteúdo
+   (index.html, avisos.json, LEIA-ME.txt e as pastas "coletor" e ".github").
+   ATENÇÃO: a pasta ".github" é oculta; se o seu sistema a esconder, ative "mostrar ficheiros ocultos"
+   ou crie o ficheiro à mão: "Add file > Create new file", nome ".github/workflows/atualizar.yml", e cole o conteúdo.
+   Carregue em "Commit changes".
+4. Settings > Pages > "Deploy from a branch" > Branch "main" / pasta "/ (root)" > Save.
+   Passado 1-2 minutos o endereço aparece no topo dessa página. Esse é o link a dar à equipa.
+5. Settings > Actions > General > "Workflow permissions" > "Read and write permissions" > Save.
+6. Separador Actions > "Atualizar avisos" > "Run workflow". Em ~1 minuto o avisos.json fica preenchido.
+   Depois corre sozinho todos os dias às 06:30 UTC (07:30 ou 08:30 em Lisboa, conforme a hora de verão).
+
+COMO SABER SE CORREU BEM
+- Na app, no quadro de estado ("Base partilhada"), aparece a data da recolha e as fontes que falharam.
+- No GitHub, separador Actions: visto verde = OK; vermelho = abra para ver o erro.
+
+LIMITES E AVISOS HONESTOS
+- A app só mostra o que consta das fontes; campos em falta ficam em branco e devem ser confirmados no portal.
+- Se um portal mudar a página, essa fonte pode falhar; as restantes continuam e os dados anteriores dessa fonte são mantidos.
+  Nessa altura, peça ajuste do leitor em coletor/coletar.mjs ou use "Adicionar aviso > Colar lista do portal".
+- Fontes lidas: Fundo Ambiental, Portugal 2030, Turismo de Portugal e EU Funding & Tenders (abertos e em breve).
+  As outras fontes continuam como ligações. A leitura de Portugal 2030 e do Funding & Tenders não foi testada com os portais reais.
+- Turismo de Portugal: a listagem não traz datas; o coletor tenta ler o prazo em cada página do aviso e, se não o encontrar, deixa-o vazio.
+- O GitHub pode pausar tarefas agendadas após 60 dias sem atividade no repositório: basta voltar a carregar em "Run workflow".
+- A página é pública (só contém avisos públicos). As notas pessoais ficam no navegador de cada utilizador.
+- Custo: zero. Não usa Claude nem IA.
