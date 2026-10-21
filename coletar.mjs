@@ -131,7 +131,8 @@ async function funding() {
     todos.push(...rs.map(mapFT));
     if (rs.length < 100) break;
   }
-  const v = todos.filter(x => x.nome && x.codigo);
+  // exclui ações externas da UE (EuropeAid: países terceiros), sem interesse para autarquias
+  const v = todos.filter(x => x.nome && x.codigo && !/^EuropeAid\//i.test(x.codigo));
   if (!v.length) throw new Error('resposta sem avisos');
   return v;
 }
