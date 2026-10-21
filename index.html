@@ -1515,8 +1515,8 @@ async function atualizar(){
       const j=JSON.parse(await fetchText(bu));
       if(!Array.isArray(j.avisos)&&!j.registos)throw new Error('formato inválido (falta "avisos" ou "registos")');
       j.avisos=j.avisos||[];
-      let nr=0,nrr=0;
-      Object.entries(j.registos||{}).forEach(([sid,arr])=>{const s=DB.sources.find(x=>x.id===sid);if(!s||!Array.isArray(arr))return;const recs=arr.map(o=>mapRecord(o,s)).filter(Boolean);const rr=upsert(recs);nr+=recs.length;nrr+=rr.novos;});
+      let nr=0,nrr=0;st.cob={};
+      Object.entries(j.registos||{}).forEach(([sid,arr])=>{const s=DB.sources.find(x=>x.id===sid);if(!s||!Array.isArray(arr))return;const recs=arr.map(o=>mapRecord(o,s)).filter(Boolean);const rr=upsert(recs);nr+=recs.length;nrr+=rr.novos;if(recs.length)st.cob[sid]=recs.length;});
       (j.sources||[]).forEach(s=>{if(!DB.sources.some(x=>x.id===s.id))DB.sources.push(s);});
       const ids=new Set(DB.sources.map(s=>s.id));
       const r=upsert(j.avisos.filter(a=>a&&a.id&&ids.has(a.fonte)));
@@ -1525,6 +1525,7 @@ async function atualizar(){
   }else st.base={ok:null,msg:'Sem base partilhada configurada (opcional). Quando a app estiver alojada, procura "avisos.json" ao lado dela.'};
   for(const s of DB.sources.filter(x=>x.active)){
     const fu=(s.feed||'').trim();
+    if(st.cob&&st.cob[s.id]){st.items.push({s,state:'base',msg:st.cob[s.id]+' aviso(s) vindos da base partilhada'});continue;}
     if(!fu){st.items.push({s,state:'nofeed'});continue;}
     try{
       const arr=parseAny(await fetchText(fu),fu);
@@ -1542,8 +1543,9 @@ function statusHtml(){
   if(!STATUS)return '<div class="muted">'+(when?'Última atualização: '+when+'.':'Ainda não foi feita nenhuma atualização.')+'</div>';
   const L=[];const b=STATUS.base;
   L.push(`<div>${b.ok===true?'✔':b.ok===false?(b.opcional?'—':'✖'):'—'} <b>Base partilhada</b>: ${esc(b.ok===false&&b.opcional?'não encontrada (opcional)':b.msg)}</div>`);
-  const com=STATUS.items.filter(x=>x.state!=='nofeed'),sem=STATUS.items.filter(x=>x.state==='nofeed');
+  const com=STATUS.items.filter(x=>x.state!=='nofeed'&&x.state!=='base'),viaB=STATUS.items.filter(x=>x.state==='base'),sem=STATUS.items.filter(x=>x.state==='nofeed');
   com.forEach(x=>L.push(`<div>${x.state==='ok'?'✔':'✖'} <b>${esc(x.s.n)}</b>: ${esc(x.msg)}${x.state==='err'?' — alternativa: <a href="#" data-go="add">Adicionar aviso › Colar lista do portal</a>':''}</div>`));
+  viaB.forEach(x=>L.push(`<div>✔ <b>${esc(x.s.n)}</b>: ${esc(x.msg)}</div>`));
   if(sem.length)L.push(`<div class="muted" style="margin-top:6px">${sem.length} fonte(s) sem feed configurado (abra o portal ou adicione o aviso manualmente): ${sem.map(x=>esc(x.s.n)).join('; ')}.</div>`);
   return '<div style="font-size:.9rem">'+L.join('')+'</div><div class="muted" style="font-size:.8rem;margin-top:6px">Atualizado em '+STATUS.ts.toLocaleString('pt-PT')+'.</div>';
 }
