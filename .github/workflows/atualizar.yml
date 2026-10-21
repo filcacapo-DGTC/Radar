@@ -1,26 +1,12 @@
-yaml
-name: Atualizar avisos
-on:
-  schedule:
-    - cron: '30 6 * * *'
-  workflow_dispatch: {}
-permissions:
-  contents: write
-jobs:
-  coletar:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - run: npm install
-      - run: node coletar.mjs
-        env:
-          AVISOS_OUT: avisos.json
-      - name: Guardar avisos.json
-        run: |
-          git config user.name "coletor-avisos"
-          git config user.email "coletor@users.noreply.github.com"
-          git add avisos.json
-          git diff --cached --quiet || git commit -m "Atualização diária de avisos"
-          git push
+{
+"name": "Atualizar avisos",
+"on": {"schedule": [{"cron": "30 6 * * *"}], "workflow_dispatch": {}},
+"permissions": {"contents": "write"},
+"jobs": {"coletar": {"runs-on": "ubuntu-latest", "steps": [
+{"uses": "actions/checkout@v4"},
+{"uses": "actions/setup-node@v4", "with": {"node-version": 20}},
+{"run": "npm install"},
+{"run": "node coletar.mjs", "env": {"AVISOS_OUT": "avisos.json"}},
+{"name": "Guardar avisos.json", "run": "git config user.name coletor-avisos && git config user.email coletor@users.noreply.github.com && git add avisos.json && (git diff --cached --quiet || (git commit -m 'Atualizacao diaria de avisos' && git push))"}
+]}}
+}
