@@ -65,10 +65,28 @@ async function fundoamb() {
 
 // ---------- Portugal 2030 (API WordPress do portal) ----------
 async function pt2030() {
-  const j = await (await get('https://portugal2030.pt/wp-json/avisos/query')).json();
-  const arr = Array.isArray(j) ? j : (j.items || j.avisos || j.data || []);
-  if (!arr.length) throw new Error('resposta sem avisos');
-  return arr;
+  // Pedido igual ao da página portugal2030.pt/avisos (estadoAvisoId=7 = avisos abertos; todos os programas 100-122)
+  const U = 'https://portugal2030.pt/wp-json/avisos/query';
+  const corpo = pg => {
+    const p = new URLSearchParams();
+    p.append('estadoAvisoId', '7');
+    for (let i = 100; i <= 122; i++) p.append('programaId[]', String(i));
+    ['NUTSIIIId', 'fundoId', 'tipoAvisoId', 'tipoModalidadeApresentacaoCandidaturaId'].forEach(k => p.append(k, ''));
+    p.append('order_by_field', 'publicacao'); p.append('order_by_direction', 'desc');
+    if (pg > 1) p.append('page', String(pg));
+    return p;
+  };
+  const todos = new Map();
+  for (let pg = 1; pg <= 20; pg++) {
+    const r = await get(U, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest', Referer: 'https://portugal2030.pt/avisos/' }, body: corpo(pg) });
+    const j = await r.json();
+    const arr = Array.isArray(j) ? j : (j.avisos || j.items || j.data || []);
+    const antes = todos.size;
+    arr.forEach(it => { const k = it.aviso?.codigoAviso || JSON.stringify(it).slice(0, 80); todos.set(k, it); });
+    if (!arr.length || todos.size === antes) break;   // sem novidades: acabou (ou a API ignora a página)
+  }
+  if (!todos.size) throw new Error('resposta sem avisos');
+  return [...todos.values()];
 }
 
 // ---------- Turismo de Portugal ----------
